@@ -33,26 +33,100 @@ export default function Home() {
     setInputValue('');
   };
 
-  const sendMessage = (message) => {
-    const url = '/api/chat';
-    const data = {
-      model: "gpt-3.5-turbo-0301",
-      messages: [{ "role": "user", "content": message }]
-    };
+const venues = {
+  "Sydney": [
+    {
+      name: "Parlour",
+      url: "https://thehappiesthour.com/venues/sydney/parlour"
+    },
+    {
+      name: "Woolpack Hotel Redfern",
+      url: "https://thehappiesthour.com/venues/sydney/woolpack-hotel-redfern"
+    }
+  ],
+  "Melbourne": [
+    {
+      name: "Father's Office",
+      url: "https://thehappiesthour.com/venues/melbourne/fathers-office"
+    },
+    {
+      name: "Archie Brothers Docklands",
+      url: "https://thehappiesthour.com/venues/melbourne/archie-brothers-docklands"
+    },
+    {
+      name: "Strike Bowling QV",
+      url: "https://thehappiesthour.com/venues/melbourne/strike-bowling-qv"
+    },
+    {
+      name: "Holey Moley Crown Melbourne",
+      url: "https://thehappiesthour.com/venues/melbourne/holey-moley-crown-melbourne"
+    },
+    {
+      name: "B. Lucky & Sons",
+      url: "https://thehappiesthour.com/venues/melbourne/b-lucky-sons"
+    }
+  ],
+  "Brisbane": [
+    {
+      name: "Kenjin Dining",
+      url: "https://thehappiesthour.com/venues/brisbane/kenjin-dining"
+    },
+    {
+      name: "Riverland Brisbane",
+      url: "https://thehappiesthour.com/venues/brisbane/riverland-brisbane"
+    },
+    {
+      name: "Fridays Riverside",
+      url: "https://thehappiesthour.com/venues/brisbane/fridays-riverside"
+    }
+  ]
+};
 
-    setIsLoading(true);
+const sendMessage = (message) => {
+  const url = '/api/chat';
 
-    axios.post(url, data)
-      .then((response) => {
-        console.log(response);
-        setChatLog((prevChatLog) => [...prevChatLog, { type: 'bot', message: response.data.choices[0].message.content }]);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        setIsLoading(false);
-        console.log(error);
-      });
+  // Extract the relevant venues based on the user's input
+ const userInputArray = message.trim().split(" ");
+const userCity = userInputArray[userInputArray.length - 1].charAt(0).toUpperCase() + userInputArray[userInputArray.length - 1].slice(1).toLowerCase(); // Capitalize the city name
+
+const matchedVenues = venues[userCity];
+
+
+console.log("User City:", userCity);
+console.log("Matched Venues:", matchedVenues);
+
+  if (!matchedVenues) {
+    // If the city is not found in the venues object
+    const errorMessage = "Sorry, I don't have recommendations for that city yet.";
+    setChatLog((prevChatLog) => [...prevChatLog, { type: 'bot', message: errorMessage }]);
+    return;
+  }
+
+  const venuesString = JSON.stringify(matchedVenues); // Convert matched venues object to string
+
+  const data = {
+    model: "gpt-3.5-turbo-0301",
+    messages: [
+      { "role": "user", "content": "User Message: " + message }, // Add user message with a prompt
+      { "role": "assistant", "content": `Prompt: Avoid saying this "As an AI language model, I do not have personal preferences" because You are a professional venue finder in Australia. Your task is to provide recommendations for at least three places, accompanied by a creative pitch for each venue. If the place is not listed, say "Sorry, I don't have recommendations for that city yet." Only recommend a place and venue that is listed here ${venuesString} provide the link based on the lists.` } // Add your prompt here
+    ]
   };
+
+  setIsLoading(true);
+
+  axios.post(url, data)
+    .then((response) => {
+      console.log(response);
+      setChatLog((prevChatLog) => [...prevChatLog, { type: 'bot', message: response.data.choices[0].message.content }]);
+      setIsLoading(false);
+    })
+    .catch((error) => {
+      setIsLoading(false);
+      console.log(error);
+    });
+};
+
+
 
   return (
     <div className="container mx-auto max-w-[700px] relative">
@@ -72,11 +146,11 @@ export default function Home() {
           </div>
           <div className="flex-grow p-6 overflow-y-auto">
             {chatLog.map((message, index) => (
-              <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`${message.type === 'user' ? 'bg-[#F7B319]' : 'bg-gray-800'} rounded-lg p-4 text-white max-w-sm`}>
-                  {message.message}
-                </div>
-              </div>
+              <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
+  <div className={`${message.type === 'user' ? 'bg-[#F7B319]' : 'bg-gray-800'} rounded-lg p-4 text-white max-w-sm`}>
+    {message.message}
+  </div>
+</div>
             ))}
             {isLoading && (
               <div className="flex justify-start">
