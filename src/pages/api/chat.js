@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     const url = 'https://api.openai.com/v1/chat/completions';
     const headers = {
       'Content-type': 'application/json',
-      'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
     };
 
     // First AI Call to analyze the user input for the city
