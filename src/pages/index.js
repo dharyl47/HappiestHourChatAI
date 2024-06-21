@@ -42,81 +42,14 @@ export default function Home() {
     setInputValue('');
   };
 
-  const venues = {
-    "Sydney": [
-      {
-        name: "Parlour",
-        url: "https://thehappiesthour.com/venues/sydney/parlour"
-      },
-      {
-        name: "Woolpack Hotel Redfern",
-        url: "https://thehappiesthour.com/venues/sydney/woolpack-hotel-redfern"
-      }
-    ],
-    "Melbourne": [
-      {
-        name: "Father's Office",
-        url: "https://thehappiesthour.com/venues/melbourne/fathers-office"
-      },
-      {
-        name: "Archie Brothers Docklands",
-        url: "https://thehappiesthour.com/venues/melbourne/archie-brothers-docklands"
-      },
-      {
-        name: "Strike Bowling QV",
-        url: "https://thehappiesthour.com/venues/melbourne/strike-bowling-qv"
-      },
-      {
-        name: "Holey Moley Crown Melbourne",
-        url: "https://thehappiesthour.com/venues/melbourne/holey-moley-crown-melbourne"
-      },
-      {
-        name: "B. Lucky & Sons",
-        url: "https://thehappiesthour.com/venues/melbourne/b-lucky-sons"
-      }
-    ],
-    "Brisbane": [
-      {
-        name: "Kenjin Dining",
-        url: "https://thehappiesthour.com/venues/brisbane/kenjin-dining"
-      },
-      {
-        name: "Riverland Brisbane",
-        url: "https://thehappiesthour.com/venues/brisbane/riverland-brisbane"
-      },
-      {
-        name: "Fridays Riverside",
-        url: "https://thehappiesthour.com/venues/brisbane/fridays-riverside"
-      }
-    ]
-  };
-
   const sendMessage = (message) => {
     const url = '/api/chat';
-
-    // Extract the relevant venues based on the user's input
-    const userInputArray = message.trim().split(" ");
-    const userCity = userInputArray[userInputArray.length - 1].charAt(0).toUpperCase() + userInputArray[userInputArray.length - 1].slice(1).toLowerCase(); // Capitalize the city name
-
-    const matchedVenues = venues[userCity];
-
-    console.log("User City:", userCity);
-    console.log("Matched Venues:", matchedVenues);
-
-    if (!matchedVenues) {
-      // If the city is not found in the venues object
-      const errorMessage = "Sorry, I don't have recommendations for that city yet.";
-      setChatLog((prevChatLog) => [...prevChatLog, { type: 'bot', message: errorMessage }]);
-      return;
-    }
-
-    const venuesString = JSON.stringify(matchedVenues); // Convert matched venues object to string
 
     const data = {
       model: "gpt-3.5-turbo-0301",
       messages: [
         { "role": "user", "content": "User Message: " + message }, // Add user message with a prompt
-        { "role": "assistant", "content": `Prompt: Avoid saying this "As an AI language model, I do not have personal preferences" and "As an AI language model" because You are a professional venue finder in Australia. Your task is to provide recommendations for at least three places, accompanied by a creative pitch for each venue. If the place is not listed, say "Sorry, I don't have recommendations for that city yet." Always provide the link/url of the venue - Only recommend a place and venue that is listed here ${venuesString} . Always provide the link/url based on the lists.` } // Add your prompt here
+        { "role": "assistant", "content": `Prompt: Avoid saying this "As an AI language model, I do not have personal preferences" and "As an AI language model" because You are a professional venue finder in Australia. Your task is to provide recommendations for at least three places, accompanied by a creative pitch for each venue. If the place is not listed, say "Sorry, I don't have recommendations for that city yet." Always provide the link/url of the venue - Only recommend a place and venue that is listed here. Always provide the link/url based on the lists.` } // Add your prompt here
       ]
     };
 
@@ -133,8 +66,6 @@ export default function Home() {
         console.log(error);
       });
   };
-
-
 
   return (
     <div className="container mx-auto max-w-[700px] relative">
@@ -155,10 +86,10 @@ export default function Home() {
           <div className="flex-grow p-6 overflow-y-auto">
             {chatLog.map((message, index) => (
               <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
-  <div className={`${message.type === 'user' ? 'bg-[#F7B319]' : 'bg-gray-800'} rounded-lg p-4 text-white max-w-sm`}>
-    {message.message}
-  </div>
-</div>
+                <div className={`${message.type === 'user' ? 'bg-[#F7B319]' : 'bg-gray-800'} rounded-lg p-4 text-white max-w-sm`}>
+                  {message.message}
+                </div>
+              </div>
             ))}
             {isLoading && (
               <div className="flex justify-start">
@@ -200,23 +131,21 @@ export default function Home() {
       )}
       {!isChatOpen && <ChatIcon onClick={toggleChat} />}
       {/* Embed the iframe in the background */}
-     <iframe
-  src="https://thehappiesthour.com/"
-  style={{ 
-    position: 'fixed', 
-    top: 0, 
-    left: 0, 
-    width: '100vw', 
-    height: '100vh', 
-    margin: 0, 
-    padding: 0, 
-    border: 'none',
-    overflow: 'hidden', // This will hide any scrollbars
-    zIndex: -1 
-  }}
-></iframe>
-
-
+      <iframe
+        src="https://thehappiesthour.com/"
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          width: '100vw', 
+          height: '100vh', 
+          margin: 0, 
+          padding: 0, 
+          border: 'none',
+          overflow: 'hidden', // This will hide any scrollbars
+          zIndex: -1 
+        }}
+      ></iframe>
     </div>
   );
 }
