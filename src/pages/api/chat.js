@@ -61,7 +61,7 @@ export default async function handler(req, res) {
       content: special.content
     }));
 
-   const responseMessage = `Here are some specials in ${userCity} for '${userQuery}':\n\n${specialsList.map(s => `- ${s.title} at ${s.venue}: ${s.content}\n   URL: <a href="${s.url}" style="color: blue;">${s.url}</a>`).join('\n\n')}`;
+  const responseMessage = `Here are some specials in ${userCity} for '${userQuery}':\n\n${specialsList.map(s => `- ${s.title} at ${s.venue}: ${s.content}\n   URL: [${s.url}](${s.url})`).join('\n\n')}`;
 
     res.status(200).json({ choices: [{ message: { content: responseMessage } }] });
 
