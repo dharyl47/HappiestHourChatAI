@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     const url = 'https://api.openai.com/v1/chat/completions';
     const headers = {
       'Content-type': 'application/json',
-       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
     };
 
     // First AI Call to analyze the user input for the city and keywords
@@ -61,7 +61,7 @@ export default async function handler(req, res) {
       content: special.content
     }));
 
-  const responseMessage = `Here are some specials in ${userCity} for '${userQuery}':\n\n${specialsList.map(s => `- ${s.title} at ${s.venue}: ${s.content}\n   URL: [${s.url}](${s.url})`).join('\n\n')}`;
+    const responseMessage = `Here are some specials in ${userCity} for '${userQuery}':\n\n${specialsList.map(s => `- ${s.title} at ${s.venue}: ${s.content}\n   [${s.url}](${s.url})`).join('\n\n')}`;
 
     res.status(200).json({ choices: [{ message: { content: responseMessage } }] });
 
