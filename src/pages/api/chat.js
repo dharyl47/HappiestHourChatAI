@@ -57,7 +57,7 @@ export default async function handler(req, res) {
     const specialsList = specials.map(special => ({
       title: special.title,
       venue: special.venue,
-      url: `https://thehappiesthour.com/specials/${special.venueMeta.city}/${special.slug}`,
+      url: `https://thehappiesthour.com/venue/${special.venueMeta.cityObj.slug}/${special.venueMeta.venue.slug}`,
       content: special.content
     }));
 
