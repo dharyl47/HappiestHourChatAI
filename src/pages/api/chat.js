@@ -56,12 +56,12 @@ export default async function handler(req, res) {
     // Format specials into response
     const specialsList = specials.map(special => ({
       title: special.title,
-      venue: special.venue,
+      venue: special.venueMeta.venue.title,
       url: `https://thehappiesthour.com/venue/${special.venueMeta.cityObj.slug}/${special.venueMeta.venue.slug}`,
       content: special.content
     }));
 
-    const responseMessage = `Here are some specials in ${userCity} for '${userQuery}':\n\n${specialsList.map(s => `- ${s.title} at ${special.venueMeta.venue.title}: ${s.content}\n   URL: ${s.url}`).join('\n\n')}`;
+    const responseMessage = `Here are some specials in ${userCity} for '${userQuery}':\n\n${specialsList.map(s => `- ${s.title} at ${s.venue}: ${s.content}\n   URL: ${s.url}`).join('\n\n')}`;
 
     res.status(200).json({ choices: [{ message: { content: responseMessage } }] });
 
