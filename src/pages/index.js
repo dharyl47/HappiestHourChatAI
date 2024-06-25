@@ -87,7 +87,11 @@ export default function Home() {
             {chatLog.map((message, index) => (
               <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
                 <div className={`${message.type === 'user' ? 'bg-[#F7B319]' : 'bg-gray-800'} rounded-lg p-4 text-white max-w-sm`}>
-                  {message.message}
+                  {message.type === 'bot' ? (
+                    <div dangerouslySetInnerHTML={{ __html: message.message }} />
+                  ) : (
+                    message.message
+                  )}
                 </div>
               </div>
             ))}
