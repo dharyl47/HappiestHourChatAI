@@ -46,7 +46,7 @@ export default async function handler(req, res) {
           ]
         }
       ]
-    }).limit(3);
+    }).limit(10);
 
     if (!specials.length) {
       res.status(200).json({ choices: [{ message: { content: `Sorry, no specials found for '${userQuery}' in ${userCity}.` } }] });
