@@ -10,7 +10,8 @@ export default async function handler(req, res) {
     const url = 'https://api.openai.com/v1/chat/completions';
     const headers = {
       'Content-type': 'application/json',
-       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+      
     };
 
     // First AI Call to analyze the user input for the city and keywords
@@ -18,7 +19,7 @@ export default async function handler(req, res) {
       model: "gpt-3.5-turbo-0301",
       messages: [
         { "role": "user", "content": body.messages[0].content },
-        { "role": "assistant", "content": "You are the first AI call in my chat bot algorithm, your job is to analyze the user prompt and give a result in only 1-3 words. because im going to use that word/s to query into the database, don't mix the food with descriptive word, always use comma. Example user prompt 'Beer specials in Sydney', the return should be sydney, beer, specials. Always sort it to City, Food, descriptive word. Instruction to follow: Respond strictly based on the return codes provided below. Avoid explanations; be direct in your responses. If the user's input contains an address, analyze it and pinpoint one specific city in Australia. Return the city. If the user's input does not contain an address but contains a food/drinks, return the food/drinks name. For example, if the user mentions 'pizza', return 'pizza'. If the user's input neither contains an address nor a food/drinks, analyze it for a descriptive word. Return the descriptive word. For example, if the user asks 'can you give me a happy hour', return 'happy hour'. If the user's input contains both an address and a food, convert the address to a specific city and return 'city, food'. If user prompt has descriptive words and food/drinks return food/drinks, always separate it with comma, descriptive word, example if user prompt 'Beer specials in Sydney' return beer, specials.If the user's input does not contain a food, descriptive text, or address, return '404'." }
+        { "role": "assistant", "content": "You are the first AI call in my chat bot algorithm, your job is to analyze the user prompt and give a result in only 1-3 words. because im going to use that word/s to query into the database, don't mix the food with descriptive word, always use comma. Example user prompt 'Beer specials in Sydney', the return should be sydney, beer, specials. Always sort it to City, Food, descriptive word. Instruction to follow: Respond strictly based on the return codes provided below. Avoid explanations; be direct in your responses. If the user's input contains an address, analyze it and pinpoint one specific city in Australia, some address is Suburb pinpoint which city is that Suburb in Australia. Return the city. If the user's input does not contain an address but contains a food/drinks, return the food/drinks name. For example, if the user mentions 'pizza', return 'pizza'. If the user's input neither contains an address nor a food/drinks, analyze it for a descriptive word. Return the descriptive word. For example, if the user asks 'can you give me a happy hour', return 'happy hour'. If the user's input contains both an address and a food, convert the address to a specific city and return 'city, food'. If user prompt has descriptive words and food/drinks return food/drinks, always separate it with comma, descriptive word, example if user prompt 'Beer specials in Sydney' return beer, specials.If the user's input does not contain a food, descriptive text, or address, return '404'." }
       ]
     };
 
@@ -29,12 +30,14 @@ export default async function handler(req, res) {
     const userCity = extractCityFromResponse(userQuery);
     const keywords = extractKeywordsFromResponse(userQuery);
 
-    // MongoDB query to find specials based on city, keywords, and publish status
+    // MongoDB query to find specials based on city, suburb, keywords, and publish status
     const specials = await Specials.find({
       $and: [
         {
           $or: [
-            { 'venueMeta.city': userCity },
+            { 'venueMeta.city': { $regex: userCity, $options: 'i' } },
+            { 'venueMeta.suburb': { $regex: userCity, $options: 'i' } },
+            { 'venueMeta.street': { $regex: userCity, $options: 'i' } },
             { 'venueMeta.venue.title': { $regex: userCity, $options: 'i' } } // Check if title contains userCity
           ]
         },
@@ -49,7 +52,7 @@ export default async function handler(req, res) {
     }).limit(10);
 
     if (!specials.length) {
-      res.status(200).json({ choices: [{ message: { content: `Sorry, no specials found for '${userQuery}' in ${userCity}.` } }] });
+      res.status(200).json({ choices: [{ message: { content: `Sorry, I couldn't find any '${userQuery}' in ${userCity}.` } }] });
       return;
     }
 
@@ -61,9 +64,18 @@ export default async function handler(req, res) {
       content: special.content
     }));
 
-   const responseMessage = `Here are some specials in ${userCity} for '${userQuery}':<br><br>${specialsList.map(s => `<div>- <strong>${s.title}</strong> at ${s.venue}: ${s.content}<br>URL: <a href="${s.url}" target="_blank">${s.url}</a></div>`).join('<br><br>')}`;
+    const responseMessage = `Here are some specials in ${userCity} for '${userQuery}':<br><br>${specialsList.map(s => 
+      `<div>
+        - <strong>${s.title}</strong> at ${s.venue}: ${s.content}<br>
+        <a href="${s.url}" target="_blank">
+          <button style="background-color: #F5A71B; color: white; border-radius: 10px; padding: 10px 20px; border: none; cursor: pointer; margin-top: 15px;">
+            View Venue
+          </button>
+        </a>
+      </div>`
+    ).join('<br><br>')}`;
 
-res.status(200).json({ choices: [{ message: { content: responseMessage } }] });
+    res.status(200).json({ choices: [{ message: { content: responseMessage } }] });
 
   } catch (error) {
     console.error(error);
